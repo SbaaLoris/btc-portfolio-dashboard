@@ -1,0 +1,546 @@
+openapi: 3.0.3
+info:
+  title: BTC Portfolio Dashboard API
+  version: 1.0.0
+  description: |
+    REST API for a BTC-only portfolio tracker.
+
+    Authentication uses JWT bearer tokens. Register or log in, then send
+    `Authorization: Bearer <token>` for protected endpoints.
+servers:
+  - url: http://localhost:8000
+    description: Local development
+  - url: https://btc-portfolio-backend.onrender.com
+    description: Production
+security:
+  - bearerAuth: []
+tags:
+  - name: System
+  - name: Auth
+  - name: Transactions
+  - name: Portfolio
+  - name: Market
+paths:
+  /health:
+    get:
+      tags: [System]
+      summary: Health check
+      operationId: healthCheck
+      security: []
+      responses:
+        "200":
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Health"
+
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a user
+      operationId: registerUser
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserCreate"
+      responses:
+        "201":
+          description: User registered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthToken"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Log in
+      operationId: loginUser
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Login succeeded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthToken"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  /auth/me:
+    get:
+      tags: [Auth]
+      summary: Current user
+      operationId: getCurrentUser
+      responses:
+        "200":
+          description: Current user profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /transactions:
+    get:
+      tags: [Transactions]
+      summary: List transactions
+      operationId: listTransactions
+      parameters:
+        - $ref: "#/components/parameters/LimitParam"
+        - $ref: "#/components/parameters/OffsetParam"
+      responses:
+        "200":
+          description: User transactions ordered newest first
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Transaction"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    post:
+      tags: [Transactions]
+      summary: Create transaction
+      operationId: createTransaction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TransactionCreate"
+      responses:
+        "201":
+          description: Transaction created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Transaction"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  /transactions/{transactionId}:
+    get:
+      tags: [Transactions]
+      summary: Get transaction
+      operationId: getTransaction
+      parameters:
+        - $ref: "#/components/parameters/TransactionIdParam"
+      responses:
+        "200":
+          description: Transaction details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Transaction"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    put:
+      tags: [Transactions]
+      summary: Update transaction
+      operationId: updateTransaction
+      parameters:
+        - $ref: "#/components/parameters/TransactionIdParam"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TransactionUpdate"
+      responses:
+        "200":
+          description: Transaction updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Transaction"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+    delete:
+      tags: [Transactions]
+      summary: Delete transaction
+      operationId: deleteTransaction
+      parameters:
+        - $ref: "#/components/parameters/TransactionIdParam"
+      responses:
+        "204":
+          description: Transaction deleted
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /portfolio/summary:
+    get:
+      tags: [Portfolio]
+      summary: Portfolio summary
+      operationId: getPortfolioSummary
+      parameters:
+        - $ref: "#/components/parameters/CurrencyParam"
+      responses:
+        "200":
+          description: Current portfolio summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PortfolioSummary"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+
+  /portfolio/history:
+    get:
+      tags: [Portfolio]
+      summary: Portfolio history
+      operationId: getPortfolioHistory
+      parameters:
+        - $ref: "#/components/parameters/CurrencyParam"
+        - $ref: "#/components/parameters/RangeParam"
+      responses:
+        "200":
+          description: Portfolio value history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PortfolioHistoryPoint"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+
+  /market/btc/price:
+    get:
+      tags: [Market]
+      summary: Current BTC price
+      operationId: getBtcPrice
+      parameters:
+        - $ref: "#/components/parameters/CurrencyParam"
+      responses:
+        "200":
+          description: Current BTC price
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MarketPrice"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+
+  /market/btc/chart:
+    get:
+      tags: [Market]
+      summary: Historical BTC market chart
+      operationId: getBtcChart
+      parameters:
+        - $ref: "#/components/parameters/CurrencyParam"
+        - $ref: "#/components/parameters/RangeParam"
+      responses:
+        "200":
+          description: BTC price chart
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MarketChartPoint"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    TransactionIdParam:
+      name: transactionId
+      in: path
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+    CurrencyParam:
+      name: currency
+      in: query
+      required: false
+      schema:
+        $ref: "#/components/schemas/Currency"
+        default: CHF
+    RangeParam:
+      name: range
+      in: query
+      required: false
+      schema:
+        type: string
+        enum: [7d, 30d, 90d, 365d]
+        default: 30d
+    LimitParam:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 200
+        default: 100
+    OffsetParam:
+      name: offset
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+  schemas:
+    Health:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          example: ok
+    Currency:
+      type: string
+      enum: [CHF, USD, EUR]
+    TransactionType:
+      type: string
+      enum: [buy, sell]
+    UserCreate:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+    User:
+      type: object
+      required: [id, email, default_currency, created_at]
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+          format: email
+        default_currency:
+          $ref: "#/components/schemas/Currency"
+        created_at:
+          type: string
+          format: date-time
+    AuthToken:
+      type: object
+      required: [access_token, token_type, user]
+      properties:
+        access_token:
+          type: string
+        token_type:
+          type: string
+          example: bearer
+        user:
+          $ref: "#/components/schemas/User"
+    TransactionBase:
+      type: object
+      required: [type, btc_amount, fiat_amount, currency, transaction_date]
+      properties:
+        type:
+          $ref: "#/components/schemas/TransactionType"
+        btc_amount:
+          type: number
+          format: double
+          exclusiveMinimum: true
+          minimum: 0
+        fiat_amount:
+          type: number
+          format: double
+          exclusiveMinimum: true
+          minimum: 0
+        currency:
+          $ref: "#/components/schemas/Currency"
+        fee_amount:
+          type: number
+          format: double
+          minimum: 0
+          default: 0
+        transaction_date:
+          type: string
+          format: date-time
+        note:
+          type: string
+          nullable: true
+          maxLength: 500
+    TransactionCreate:
+      allOf:
+        - $ref: "#/components/schemas/TransactionBase"
+    TransactionUpdate:
+      allOf:
+        - $ref: "#/components/schemas/TransactionBase"
+    Transaction:
+      allOf:
+        - $ref: "#/components/schemas/TransactionBase"
+        - type: object
+          required: [id, user_id, created_at, updated_at]
+          properties:
+            id:
+              type: integer
+            user_id:
+              type: integer
+            created_at:
+              type: string
+              format: date-time
+            updated_at:
+              type: string
+              format: date-time
+    PortfolioSummary:
+      type: object
+      required:
+        - currency
+        - btc_balance
+        - average_cost
+        - total_invested
+        - total_fees
+        - current_price
+        - current_value
+        - unrealized_pnl
+        - realized_pnl
+        - updated_at
+      properties:
+        currency:
+          $ref: "#/components/schemas/Currency"
+        btc_balance:
+          type: number
+        average_cost:
+          type: number
+        total_invested:
+          type: number
+        total_fees:
+          type: number
+        current_price:
+          type: number
+        current_value:
+          type: number
+        unrealized_pnl:
+          type: number
+        realized_pnl:
+          type: number
+        updated_at:
+          type: string
+          format: date-time
+    PortfolioHistoryPoint:
+      type: object
+      required: [timestamp, btc_balance, price, value]
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        btc_balance:
+          type: number
+        price:
+          type: number
+        value:
+          type: number
+    MarketPrice:
+      type: object
+      required: [currency, price, market_cap, volume_24h, change_24h, updated_at]
+      properties:
+        currency:
+          $ref: "#/components/schemas/Currency"
+        price:
+          type: number
+        market_cap:
+          type: number
+          nullable: true
+        volume_24h:
+          type: number
+          nullable: true
+        change_24h:
+          type: number
+          nullable: true
+        updated_at:
+          type: string
+          format: date-time
+    MarketChartPoint:
+      type: object
+      required: [timestamp, price]
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        price:
+          type: number
+    Error:
+      type: object
+      required: [detail]
+      properties:
+        detail:
+          type: string
+  responses:
+    Unauthorized:
+      description: Missing or invalid token
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    Conflict:
+      description: Resource conflict
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    ValidationError:
+      description: Request validation failed
+    ServiceUnavailable:
+      description: Market service unavailable
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
