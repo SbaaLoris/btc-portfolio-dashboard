@@ -3,6 +3,7 @@ import type {
   Currency,
   MarketChartPoint,
   MarketPrice,
+  MonthlyActivity,
   PortfolioHistoryPoint,
   PortfolioSummary,
   Transaction,
@@ -95,6 +96,9 @@ export const api = {
       token,
     );
   },
+  monthlyActivity(token: string) {
+    return apiFetch<MonthlyActivity[]>("/portfolio/activity/monthly", {}, token);
+  },
   marketPrice(token: string, currency: Currency) {
     return apiFetch<MarketPrice>(`/market/btc/price?currency=${currency}`, {}, token);
   },
@@ -102,4 +106,3 @@ export const api = {
     return apiFetch<MarketChartPoint[]>(`/market/btc/chart?currency=${currency}&range=${range}`, {}, token);
   },
 };
-

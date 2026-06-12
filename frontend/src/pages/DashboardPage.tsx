@@ -8,8 +8,10 @@ import { useAuth } from "../auth/AuthContext";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import { MarketChart } from "../features/portfolio/MarketChart";
+import { MonthlyActivity } from "../features/portfolio/MonthlyActivity";
 import { PortfolioChart } from "../features/portfolio/PortfolioChart";
 import { SummaryCards } from "../features/portfolio/SummaryCards";
+import { TransactionBubbleChart } from "../features/portfolio/TransactionBubbleChart";
 import { TransactionDialog } from "../features/transactions/TransactionDialog";
 import { TransactionsTable } from "../features/transactions/TransactionsTable";
 
@@ -46,11 +48,16 @@ export function DashboardPage() {
     queryKey: ["transactions"],
     queryFn: () => api.transactions(token),
   });
+  const monthlyActivityQuery = useQuery({
+    queryKey: ["monthly-activity"],
+    queryFn: () => api.monthlyActivity(token),
+  });
 
   const refreshPortfolio = React.useCallback(() => {
     void queryClient.invalidateQueries({ queryKey: ["transactions"] });
     void queryClient.invalidateQueries({ queryKey: ["portfolio-summary"] });
     void queryClient.invalidateQueries({ queryKey: ["portfolio-history"] });
+    void queryClient.invalidateQueries({ queryKey: ["monthly-activity"] });
   }, [queryClient]);
 
   const createMutation = useMutation({
@@ -99,6 +106,7 @@ export function DashboardPage() {
     marketPriceQuery.error ??
     marketChartQuery.error ??
     transactionsQuery.error ??
+    monthlyActivityQuery.error ??
     createMutation.error ??
     updateMutation.error ??
     deleteMutation.error;
@@ -144,10 +152,18 @@ export function DashboardPage() {
 
         <SummaryCards summary={summaryQuery.data} loading={summaryQuery.isLoading} />
 
+        <TransactionBubbleChart
+          marketData={marketChartQuery.data ?? []}
+          transactions={transactionsQuery.data ?? []}
+          currency={currency}
+        />
+
         <div className="grid gap-6 xl:grid-cols-2">
           <PortfolioChart data={historyQuery.data ?? []} currency={currency} />
           <MarketChart data={marketChartQuery.data ?? []} price={marketPriceQuery.data} currency={currency} />
         </div>
+
+        <MonthlyActivity rows={monthlyActivityQuery.data ?? []} currency={currency} />
 
         <TransactionsTable
           transactions={transactionsQuery.data ?? []}
@@ -174,4 +190,3 @@ export function DashboardPage() {
     </main>
   );
 }
-

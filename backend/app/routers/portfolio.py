@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models import User
-from app.schemas.portfolio import PortfolioHistoryPoint, PortfolioSummary
+from app.schemas.portfolio import MonthlyActivity, PortfolioHistoryPoint, PortfolioSummary
 from app.services.auth import get_current_user
 from app.services.portfolio import PortfolioService
 
@@ -28,3 +28,10 @@ def history(
 ) -> list[PortfolioHistoryPoint]:
     return PortfolioService(db).history(user, currency, range)
 
+
+@router.get("/activity/monthly", response_model=list[MonthlyActivity])
+def monthly_activity(
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+) -> list[MonthlyActivity]:
+    return PortfolioService(db).monthly_activity(user)

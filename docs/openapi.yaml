@@ -237,6 +237,23 @@ paths:
         "503":
           $ref: "#/components/responses/ServiceUnavailable"
 
+  /portfolio/activity/monthly:
+    get:
+      tags: [Portfolio]
+      summary: Monthly portfolio activity
+      operationId: getMonthlyActivity
+      responses:
+        "200":
+          description: Monthly buy/sell activity ordered oldest first
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MonthlyActivity"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
   /market/btc/price:
     get:
       tags: [Market]
@@ -441,11 +458,16 @@ components:
         - btc_balance
         - average_cost
         - total_invested
+        - net_invested
         - total_fees
         - current_price
         - current_value
         - unrealized_pnl
         - realized_pnl
+        - pnl_percent
+        - largest_transaction_amount
+        - transaction_count
+        - first_transaction_date
         - updated_at
       properties:
         currency:
@@ -455,6 +477,8 @@ components:
         average_cost:
           type: number
         total_invested:
+          type: number
+        net_invested:
           type: number
         total_fees:
           type: number
@@ -466,6 +490,16 @@ components:
           type: number
         realized_pnl:
           type: number
+        pnl_percent:
+          type: number
+        largest_transaction_amount:
+          type: number
+        transaction_count:
+          type: integer
+        first_transaction_date:
+          type: string
+          format: date-time
+          nullable: true
         updated_at:
           type: string
           format: date-time
@@ -511,6 +545,23 @@ components:
           format: date-time
         price:
           type: number
+    MonthlyActivity:
+      type: object
+      required: [month, buy_amount, sell_amount, net_amount, btc_amount, transaction_count]
+      properties:
+        month:
+          type: string
+          example: "2026-06"
+        buy_amount:
+          type: number
+        sell_amount:
+          type: number
+        net_amount:
+          type: number
+        btc_amount:
+          type: number
+        transaction_count:
+          type: integer
     Error:
       type: object
       required: [detail]

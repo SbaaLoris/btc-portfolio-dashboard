@@ -36,11 +36,16 @@ export type PortfolioSummary = {
   btc_balance: number;
   average_cost: number;
   total_invested: number;
+  net_invested: number;
   total_fees: number;
   current_price: number;
   current_value: number;
   unrealized_pnl: number;
   realized_pnl: number;
+  pnl_percent: number;
+  largest_transaction_amount: number;
+  transaction_count: number;
+  first_transaction_date: string | null;
   updated_at: string;
 };
 
@@ -65,3 +70,11 @@ export type MarketChartPoint = {
   price: number;
 };
 
+export type MonthlyActivity = {
+  month: string;
+  buy_amount: number;
+  sell_amount: number;
+  net_amount: number;
+  btc_amount: number;
+  transaction_count: number;
+};
