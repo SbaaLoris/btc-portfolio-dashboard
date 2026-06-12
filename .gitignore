@@ -1,0 +1,47 @@
+# Existing export artifacts kept out of this app repository
+IMG_*.PNG
+NotebookLM_Quiz_*.md
+NotebookLM_Quiz_*.pdf
+notebooklm_quiz_*
+ocr
+ocr.*
+extract_ocr.py
+parse_ocr.py
+build_lernversion.py
+build_lernversion_pdf.py
+build_summary.py
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+*.db
+*.sqlite
+*.sqlite3
+
+# Node / frontend
+node_modules/
+dist/
+build/
+.vite/
+coverage/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment and local files
+.env
+.env.*
+!.env.example
+.DS_Store
+.idea/
+.vscode/
+
