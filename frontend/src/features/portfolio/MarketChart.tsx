@@ -27,11 +27,11 @@ export function MarketChart({
   }));
 
   return (
-    <Card>
+    <Card className="overflow-hidden">
       <CardHeader className="flex flex-row items-center justify-between gap-4">
         <div>
           <CardTitle>BTC market</CardTitle>
-          <p className="mt-1 text-sm text-zinc-500">
+          <p className="mt-1 text-sm font-semibold text-zinc-500">
             {price ? `${formatCurrency(price.price, currency)} (${formatPercent(price.change_24h)})` : "Loading price"}
           </p>
         </div>
@@ -40,7 +40,7 @@ export function MarketChart({
         <div className="h-72">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData} margin={{ left: 6, right: 6 }}>
-              <CartesianGrid stroke="#e4e4e7" strokeDasharray="3 3" />
+              <CartesianGrid stroke="#e4e4e7" strokeDasharray="3 3" vertical={false} />
               <XAxis dataKey="date" tickLine={false} axisLine={false} tick={{ fill: "#71717a", fontSize: 12 }} />
               <YAxis
                 tickLine={false}
@@ -49,8 +49,15 @@ export function MarketChart({
                 tickFormatter={(value) => formatCurrency(Number(value), currency)}
                 width={86}
               />
-              <Tooltip formatter={(value) => formatCurrency(Number(value), currency)} />
-              <Line dataKey="price" type="monotone" stroke="#2563eb" strokeWidth={2} dot={false} />
+              <Tooltip
+                formatter={(value) => formatCurrency(Number(value), currency)}
+                contentStyle={{
+                  border: "1px solid #e4e4e7",
+                  borderRadius: 12,
+                  boxShadow: "0 18px 45px rgba(15, 23, 42, 0.12)",
+                }}
+              />
+              <Line dataKey="price" type="monotone" stroke="#111827" strokeWidth={2.5} dot={false} />
             </LineChart>
           </ResponsiveContainer>
         </div>
@@ -58,4 +65,3 @@ export function MarketChart({
     </Card>
   );
 }
-

@@ -133,19 +133,30 @@ export function DashboardPage() {
     deleteMutation.error;
 
   return (
-    <main className="min-h-screen bg-[#f6f7f9]">
-      <header className="border-b border-zinc-200 bg-white">
-        <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-5 sm:flex-row sm:items-center sm:justify-between lg:px-8">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-100 text-amber-700">
-              <Bitcoin className="h-5 w-5" />
+    <main className="min-h-screen bg-[linear-gradient(180deg,#fbfcfd_0%,#f1f4f8_42%,#e8edf4_100%)] text-zinc-950">
+      <header className="sticky top-0 z-30 border-b border-white/70 bg-white/78 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-[1500px] flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between lg:px-8">
+          <div className="flex min-w-0 items-center gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-400 text-zinc-950 shadow-[0_16px_35px_rgba(217,119,6,0.28)]">
+              <Bitcoin className="h-6 w-6" />
             </div>
-            <div>
-              <h1 className="text-xl font-semibold text-zinc-950">BTC Portfolio</h1>
-              <p className="text-sm text-zinc-500">{auth.user?.email}</p>
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="text-xl font-black text-zinc-950 sm:text-2xl">BTC Portfolio</h1>
+                <span className="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-bold uppercase tracking-[0.08em] text-amber-700">
+                  {currency}
+                </span>
+              </div>
+              <p className="truncate text-sm text-zinc-500">{auth.user?.email}</p>
             </div>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="hidden rounded-2xl border border-zinc-200/80 bg-white/75 px-3 py-2 text-right shadow-sm md:block">
+              <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-zinc-500">BTC spot</p>
+              <p className="font-semibold tabular-nums text-zinc-950">
+                {marketPriceQuery.data ? `${marketPriceQuery.data.price.toLocaleString("de-CH")} ${currency}` : "Loading"}
+              </p>
+            </div>
             <Button variant="secondary" onClick={() => queryClient.invalidateQueries()}>
               <RefreshCw className="h-4 w-4" />
               Refresh
@@ -162,22 +173,22 @@ export function DashboardPage() {
         </div>
       </header>
 
-      <div className="mx-auto grid max-w-7xl gap-6 px-4 py-6 lg:px-8">
+      <div className="mx-auto grid max-w-[1500px] gap-5 px-4 py-5 lg:px-8">
         {error ? (
-          <Card className="border-red-200 bg-red-50">
-            <CardContent className="text-sm text-red-700">
+          <Card className="border-red-200 bg-red-50 shadow-none">
+            <CardContent className="text-sm font-medium text-red-700">
               {error instanceof Error ? error.message : "Something went wrong"}
             </CardContent>
           </Card>
         ) : null}
         {csvMessage ? (
-          <Card className="border-emerald-200 bg-emerald-50">
-            <CardContent className="text-sm text-emerald-700">{csvMessage}</CardContent>
+          <Card className="border-emerald-200 bg-emerald-50 shadow-none">
+            <CardContent className="text-sm font-medium text-emerald-700">{csvMessage}</CardContent>
           </Card>
         ) : null}
         {csvError ? (
-          <Card className="border-red-200 bg-red-50">
-            <CardContent className="text-sm text-red-700">{csvError}</CardContent>
+          <Card className="border-red-200 bg-red-50 shadow-none">
+            <CardContent className="text-sm font-medium text-red-700">{csvError}</CardContent>
           </Card>
         ) : null}
 
@@ -189,7 +200,7 @@ export function DashboardPage() {
           currency={currency}
         />
 
-        <div className="grid gap-6 xl:grid-cols-2">
+        <div className="grid gap-5 xl:grid-cols-2">
           <PortfolioChart data={historyQuery.data ?? []} currency={currency} />
           <MarketChart data={marketChartQuery.data ?? []} price={marketPriceQuery.data} currency={currency} />
         </div>

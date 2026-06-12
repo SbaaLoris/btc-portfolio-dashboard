@@ -25,7 +25,7 @@ export function PortfolioChart({
   }));
 
   return (
-    <Card>
+    <Card className="overflow-hidden">
       <CardHeader>
         <CardTitle>Portfolio value</CardTitle>
       </CardHeader>
@@ -39,7 +39,7 @@ export function PortfolioChart({
                   <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid stroke="#e4e4e7" strokeDasharray="3 3" />
+              <CartesianGrid stroke="#e4e4e7" strokeDasharray="3 3" vertical={false} />
               <XAxis dataKey="date" tickLine={false} axisLine={false} tick={{ fill: "#71717a", fontSize: 12 }} />
               <YAxis
                 tickLine={false}
@@ -48,8 +48,15 @@ export function PortfolioChart({
                 tickFormatter={(value) => formatCurrency(Number(value), currency)}
                 width={86}
               />
-              <Tooltip formatter={(value) => formatCurrency(Number(value), currency)} />
-              <Area dataKey="value" stroke="#d97706" fill="url(#portfolioValue)" strokeWidth={2} />
+              <Tooltip
+                formatter={(value) => formatCurrency(Number(value), currency)}
+                contentStyle={{
+                  border: "1px solid #e4e4e7",
+                  borderRadius: 12,
+                  boxShadow: "0 18px 45px rgba(15, 23, 42, 0.12)",
+                }}
+              />
+              <Area dataKey="value" stroke="#d97706" fill="url(#portfolioValue)" strokeWidth={2.5} />
             </AreaChart>
           </ResponsiveContainer>
         </div>
@@ -57,4 +64,3 @@ export function PortfolioChart({
     </Card>
   );
 }
-

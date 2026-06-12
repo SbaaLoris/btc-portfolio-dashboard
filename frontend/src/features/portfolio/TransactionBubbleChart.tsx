@@ -50,11 +50,11 @@ export function TransactionBubbleChart({
   const maxAmount = Math.max(...bubbleData.map((point) => point.amount), 1);
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between gap-4">
+    <Card className="overflow-hidden border-zinc-800 bg-zinc-950 text-white shadow-[0_24px_70px_rgba(15,23,42,0.22)]">
+      <CardHeader className="flex flex-row items-center justify-between gap-4 border-zinc-800 bg-zinc-900/70">
         <div>
-          <CardTitle>BTC price with entries</CardTitle>
-          <p className="mt-1 text-sm text-zinc-500">Bubble size follows transaction amount.</p>
+          <CardTitle className="text-zinc-200">BTC price with entries</CardTitle>
+          <p className="mt-1 text-sm text-zinc-400">Bubble size follows transaction amount.</p>
         </div>
         <div className="flex gap-2">
           <Badge tone="green">Buy</Badge>
@@ -62,15 +62,15 @@ export function TransactionBubbleChart({
         </div>
       </CardHeader>
       <CardContent>
-        <div className="h-[26rem]">
+        <div className="h-[28rem]">
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart margin={{ left: 8, right: 12, top: 8, bottom: 8 }}>
-              <CartesianGrid stroke="#e4e4e7" strokeDasharray="3 3" />
+              <CartesianGrid stroke="#3f3f46" strokeDasharray="3 3" vertical={false} />
               <XAxis
                 dataKey="timestamp"
                 domain={["dataMin", "dataMax"]}
                 scale="time"
-                tick={{ fill: "#71717a", fontSize: 12 }}
+                tick={{ fill: "#a1a1aa", fontSize: 12 }}
                 tickFormatter={(value) =>
                   new Date(Number(value)).toLocaleDateString("de-CH", { month: "short", year: "2-digit" })
                 }
@@ -79,7 +79,7 @@ export function TransactionBubbleChart({
               />
               <YAxis
                 dataKey="price"
-                tick={{ fill: "#71717a", fontSize: 12 }}
+                tick={{ fill: "#a1a1aa", fontSize: 12 }}
                 tickFormatter={(value) => formatCurrency(Number(value), currency)}
                 tickLine={false}
                 width={92}
@@ -92,8 +92,8 @@ export function TransactionBubbleChart({
                 dot={false}
                 isAnimationActive={false}
                 name="BTC price"
-                stroke="#d97706"
-                strokeWidth={2}
+                stroke="#f59e0b"
+                strokeWidth={2.5}
                 type="monotone"
               />
               <Scatter data={buys} dataKey="price" fill="#22c55e" name="Buys" />
@@ -120,14 +120,13 @@ function BubbleTooltip({
   if (!point?.amount || !point.timestamp) return null;
 
   return (
-    <div className="rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm shadow-lg">
-      <p className="font-semibold text-zinc-950">{point.type === "sell" ? "Sell" : "Buy"}</p>
-      <p className="text-zinc-500">{new Date(point.timestamp).toLocaleDateString("de-CH")}</p>
-      <p className="mt-1 text-zinc-700">{formatBtc(point.btc ?? 0)}</p>
-      <p className="text-zinc-700">{formatCurrency(point.amount, currency)}</p>
-      <p className="text-zinc-700">{formatCurrency(point.price ?? 0, currency)} / BTC</p>
-      {point.note ? <p className="mt-1 max-w-56 text-zinc-500">{point.note}</p> : null}
+    <div className="rounded-xl border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm shadow-2xl shadow-black/30">
+      <p className="font-bold text-white">{point.type === "sell" ? "Sell" : "Buy"}</p>
+      <p className="text-zinc-400">{new Date(point.timestamp).toLocaleDateString("de-CH")}</p>
+      <p className="mt-1 text-zinc-200">{formatBtc(point.btc ?? 0)}</p>
+      <p className="text-zinc-200">{formatCurrency(point.amount, currency)}</p>
+      <p className="text-zinc-200">{formatCurrency(point.price ?? 0, currency)} / BTC</p>
+      {point.note ? <p className="mt-1 max-w-56 text-zinc-400">{point.note}</p> : null}
     </div>
   );
 }
-
