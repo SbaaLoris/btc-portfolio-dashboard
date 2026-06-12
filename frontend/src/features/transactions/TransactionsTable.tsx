@@ -1,10 +1,9 @@
-import { Edit, Plus, Trash2 } from "lucide-react";
+import { Download, Edit, FileUp, Plus, Trash2 } from "lucide-react";
 
 import type { Transaction } from "../../api/types";
 import { Badge } from "../../components/ui/badge";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
-import { EmptyState } from "../../components/ui/empty-state";
 import { formatBtc, formatCurrency } from "../../lib/format";
 
 type TransactionsTableProps = {
@@ -12,22 +11,60 @@ type TransactionsTableProps = {
   onAdd: () => void;
   onEdit: (transaction: Transaction) => void;
   onDelete: (transaction: Transaction) => void;
+  onExportCsv: () => void;
+  onImportCsv: (file: File) => void;
+  importing: boolean;
 };
 
-export function TransactionsTable({ transactions, onAdd, onEdit, onDelete }: TransactionsTableProps) {
-  if (transactions.length === 0) {
-    return <EmptyState title="No transactions yet" message="Add your first BTC buy or sell to populate the dashboard." />;
-  }
+export function TransactionsTable({
+  transactions,
+  onAdd,
+  onEdit,
+  onDelete,
+  onExportCsv,
+  onImportCsv,
+  importing,
+}: TransactionsTableProps) {
+  const fileInputId = "transactions-csv-import";
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between gap-4">
+      <CardHeader className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <CardTitle>Transactions</CardTitle>
-        <Button onClick={onAdd}>
-          <Plus className="h-4 w-4" />
-          Add
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button onClick={onAdd}>
+            <Plus className="h-4 w-4" />
+            Add
+          </Button>
+          <Button variant="secondary" onClick={() => document.getElementById(fileInputId)?.click()} disabled={importing}>
+            <FileUp className="h-4 w-4" />
+            {importing ? "Importing..." : "Import CSV"}
+          </Button>
+          <Button variant="secondary" onClick={onExportCsv} disabled={transactions.length === 0}>
+            <Download className="h-4 w-4" />
+            Export CSV
+          </Button>
+          <input
+            id={fileInputId}
+            className="hidden"
+            type="file"
+            accept=".csv,text/csv"
+            onChange={(event) => {
+              const file = event.target.files?.[0];
+              event.target.value = "";
+              if (file) onImportCsv(file);
+            }}
+          />
+        </div>
       </CardHeader>
+      {transactions.length === 0 ? (
+        <CardContent>
+          <div className="rounded-lg border border-dashed border-zinc-200 bg-zinc-50 px-4 py-10 text-center">
+            <h3 className="font-semibold text-zinc-950">No transactions yet</h3>
+            <p className="mt-2 text-sm text-zinc-500">Add your first BTC buy or import a CSV file.</p>
+          </div>
+        </CardContent>
+      ) : (
       <CardContent className="overflow-x-auto p-0">
         <table className="w-full min-w-[760px] border-collapse text-sm">
           <thead className="bg-zinc-50 text-left text-zinc-500">
@@ -73,7 +110,7 @@ export function TransactionsTable({ transactions, onAdd, onEdit, onDelete }: Tra
           </tbody>
         </table>
       </CardContent>
+      )}
     </Card>
   );
 }
-

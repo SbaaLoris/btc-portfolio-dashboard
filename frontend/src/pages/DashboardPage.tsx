@@ -12,6 +12,7 @@ import { MonthlyActivity } from "../features/portfolio/MonthlyActivity";
 import { PortfolioChart } from "../features/portfolio/PortfolioChart";
 import { SummaryCards } from "../features/portfolio/SummaryCards";
 import { TransactionBubbleChart } from "../features/portfolio/TransactionBubbleChart";
+import { downloadTransactionsCsv, parseTransactionsCsv } from "../features/transactions/csv";
 import { TransactionDialog } from "../features/transactions/TransactionDialog";
 import { TransactionsTable } from "../features/transactions/TransactionsTable";
 
@@ -22,6 +23,8 @@ export function DashboardPage() {
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [editingTransaction, setEditingTransaction] = React.useState<Transaction | null>(null);
+  const [csvMessage, setCsvMessage] = React.useState<string | null>(null);
+  const [csvError, setCsvError] = React.useState<string | null>(null);
 
   if (!auth.token) {
     throw new Error("Dashboard requires an auth token");
@@ -80,6 +83,24 @@ export function DashboardPage() {
   const deleteMutation = useMutation({
     mutationFn: (transaction: Transaction) => api.deleteTransaction(token, transaction.id),
     onSuccess: refreshPortfolio,
+  });
+  const importCsvMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const payloads = parseTransactionsCsv(await file.text());
+      for (const payload of payloads) {
+        await api.createTransaction(token, payload);
+      }
+      return payloads.length;
+    },
+    onSuccess: (count) => {
+      setCsvError(null);
+      setCsvMessage(`Imported ${count} transactions from CSV.`);
+      refreshPortfolio();
+    },
+    onError: (err) => {
+      setCsvMessage(null);
+      setCsvError(err instanceof Error ? err.message : "CSV import failed.");
+    },
   });
 
   function openAddDialog() {
@@ -149,6 +170,16 @@ export function DashboardPage() {
             </CardContent>
           </Card>
         ) : null}
+        {csvMessage ? (
+          <Card className="border-emerald-200 bg-emerald-50">
+            <CardContent className="text-sm text-emerald-700">{csvMessage}</CardContent>
+          </Card>
+        ) : null}
+        {csvError ? (
+          <Card className="border-red-200 bg-red-50">
+            <CardContent className="text-sm text-red-700">{csvError}</CardContent>
+          </Card>
+        ) : null}
 
         <SummaryCards summary={summaryQuery.data} loading={summaryQuery.isLoading} />
 
@@ -174,6 +205,9 @@ export function DashboardPage() {
               deleteMutation.mutate(transaction);
             }
           }}
+          onExportCsv={() => downloadTransactionsCsv(transactionsQuery.data ?? [])}
+          onImportCsv={(file) => importCsvMutation.mutate(file)}
+          importing={importCsvMutation.isPending}
         />
       </div>
 
